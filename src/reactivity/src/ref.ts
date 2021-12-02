@@ -1,14 +1,33 @@
 import { trackEffects, triggerEffects, isTracking } from "./effect";
 import { createDep } from "./dep";
-import { isObject, hasChanged } from "../../shared";
+import { isObject, hasChanged, isArray } from "../../shared";
 import { reactive } from "./reactive";
+/* 
+  如果是引用类型，使用reactive进行封装
+  如果是基础类型，使用ES6的class中的setter 和 getter 进行拦截
 
+*/
+declare const RefSymbol: unique symbol
+export interface Ref<T = any> {
+  value: T
+  /**
+   * Type differentiator only.
+   * We need this to be in public d.ts but don't want it to show up in IDE
+   * autocomplete, so we use a private Symbol instead.
+   */
+  [RefSymbol]: true
+  /**
+   * @internal
+   */
+  _shallow?: boolean
+}
 export class RefImpl {
   private _rawValue: any;
   private _value: any;
   public dep;
+  /* 用以isRef类型判断 */
   public __v_isRef = true;
-
+  /* value 是原始值 */
   constructor(value) {
     this._rawValue = value;
     // 看看value 是不是一个对象，如果是一个对象的话
@@ -20,6 +39,7 @@ export class RefImpl {
   get value() {
     // 收集依赖
     trackRefValue(this);
+    /* 返回数据 */
     return this._value;
   }
 
@@ -39,7 +59,10 @@ export class RefImpl {
 export function ref(value) {
   return createRef(value);
 }
+/* 
+  也就是说，如果传入的是对象，使用reactive包装
 
+*/
 function convert(value) {
   return isObject(value) ? reactive(value) : value;
 }
@@ -90,10 +113,66 @@ export function proxyRefs(objectWithRefs) {
 }
 
 // 把 ref 里面的值拿到
-export function unRef(ref) {
+/* 
+  这个判断很简单，就是拿到里面的值
+*/
+export function unref(ref) {
   return isRef(ref) ? ref.value : ref;
 }
-
+/* 检查是否是Ref对象，其实就是判断的私有属性 __v_isRef */
 export function isRef(value) {
   return !!value.__v_isRef;
+}
+
+
+/* 类型声明 */
+export type ToRef<T> = [T] extends [Ref] ? T : Ref<T>
+
+/* 
+可以用来为源响应式对象上的某个 property 新创建一个 ref。
+然后，ref 可以被传递，它会保持对其源 property 的响应式连接。 
+*/
+/* 
+  接受两个参数
+*/
+export function toRef<T extends object, K extends keyof T>(
+  object: T,
+  key: K
+): ToRef<T[K]> {
+  const val = object[key]
+  /* 
+    如果本身就是ref类型，那么直接返回
+    实例化类ObjectRefImpl，创建一个ref并返回
+  */
+  return isRef(val) ? val : (new ObjectRefImpl(object, key) as any)
+}
+
+class ObjectRefImpl<T extends object, K extends keyof T> {
+  public readonly __v_isRef = true
+
+  constructor(private readonly _object: T, private readonly _key: K) {}
+
+  get value() {
+    return this._object[this._key]
+  }
+
+  set value(newVal) {
+    this._object[this._key] = newVal
+  }
+}
+
+
+export function toRefs(object) {
+  // if (__DEV__ && !isProxy(object)) {
+  //   console.warn(`toRefs() expects a reactive object but received a plain one.`)
+  // }
+  /* 
+    首先判断是否为数组
+    
+  */
+  const ret: any = isArray(object) ? new Array(object.length) : {}
+  for (const key in object) {
+    ret[key] = toRef(object, key)
+  }
+  return ret
 }

@@ -47,11 +47,17 @@ function createGetter(isReadonly = false, shallow = false) {
       // 在触发 get 的时候进行依赖收集
       track(target, "get", key);
     }
-
+    /* 
+      如果是shallow 的话，那么就直接返回
+      不执行下面的递归代理
+    */
     if (shallow) {
       return res;
     }
-
+    /* 
+      如果这个值是对象的话
+      执行递归操作
+     */
     if (isObject(res)) {
       // 把内部所有的是 object 的值都用 reactive 包裹，变成响应式对象
       // 如果说这个 res 值是一个对象的话，那么我们需要把获取到的 res 也转换成 reactive

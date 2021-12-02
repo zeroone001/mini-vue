@@ -66,7 +66,9 @@ function cleanupEffect(effect) {
 
   effect.deps.length = 0;
 }
-
+/* 
+  这是主函数
+*/
 export function effect(fn, options = {}) {
   const _effect = new ReactiveEffect(fn);
 

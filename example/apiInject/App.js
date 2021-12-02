@@ -16,7 +16,7 @@ const ProviderOne = {
 const ProviderTwo = {
   setup() {
     // override parent value
-    provide("foo", "fooOverride");
+    provide("foo", "fooOverrid12321e");
     provide("baz", "baz");
     const foo = inject("foo");
     // 这里获取的 foo 的值应该是 "foo"
