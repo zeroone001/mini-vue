@@ -34,6 +34,7 @@ function createGetter(isReadonly = false, shallow = false) {
       isExistInReadonlyMap() ||
       isExistInShallowReadonlyMap()
     ) {
+      /* toRaw() 函数， 执行到这里了 */
       return target;
     }
 
@@ -91,7 +92,9 @@ export const readonlyHandlers = {
     return true;
   },
 };
-
+/* 
+  给reactive使用的
+*/
 export const mutableHandlers = {
   get,
   set,

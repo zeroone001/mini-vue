@@ -62,15 +62,16 @@ export function isReactive(value) {
   return !!value[ReactiveFlags.IS_REACTIVE];
 }
 /*  
-// 如果 value 是proxy 的话 ,那么直接返回就可以了
-  // 因为会触发 createGetter 内的逻辑
-  // 如果 value 是普通对象的话，
-  // 我们就应该返回普通对象
-  // 只要不是 proxy ，只要是得到的 undefined 的话，那么就一定是普通对象
-  // TODO 这里和源码里面实现的不一样，不确定后面会不会有问题
-   */
+  如果 value 是proxy 的话 ,那么直接返回就可以了
+  因为会触发 createGetter 内的逻辑
+  如果 value 是普通对象的话，
+  我们就应该返回普通对象
+  只要不是 proxy ，只要是得到的 undefined 的话，那么就一定是普通对象
+  TODO 这里和源码里面实现的不一样，不确定后面会不会有问题
+  __v_raw
+  函数作用： 返回 reactive或者readonly 代理的原始对象
+*/
 export function toRaw(value) {
- 
   if (!value[ReactiveFlags.RAW]) {
     return value;
   }
