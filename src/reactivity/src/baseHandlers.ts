@@ -13,9 +13,14 @@ const get = createGetter();
 const set = createSetter();
 const readonlyGet = createGetter(true);
 const shallowReadonlyGet = createGetter(true, true);
-
+/* 
+  下面这个函数就是Proxy的get 的 handlers
+  get 里面收集依赖
+*/
 function createGetter(isReadonly = false, shallow = false) {
+
   return function get(target, key, receiver) {
+
     const isExistInReactiveMap = () =>
       key === ReactiveFlags.RAW && receiver === reactiveMap.get(target);
 
@@ -26,8 +31,12 @@ function createGetter(isReadonly = false, shallow = false) {
       key === ReactiveFlags.RAW && receiver === shallowReadonlyMap.get(target);
 
     if (key === ReactiveFlags.IS_REACTIVE) {
+      /* 访问 __v_isReactive */
       return !isReadonly;
     } else if (key === ReactiveFlags.IS_READONLY) {
+      /* 
+       访问  __v_isReadonly
+      */
       return isReadonly;
     } else if (
       isExistInReactiveMap() ||
@@ -58,7 +67,7 @@ function createGetter(isReadonly = false, shallow = false) {
     /* 
       如果这个值是对象的话
       执行递归操作
-     */
+    */
     if (isObject(res)) {
       // 把内部所有的是 object 的值都用 reactive 包裹，变成响应式对象
       // 如果说这个 res 值是一个对象的话，那么我们需要把获取到的 res 也转换成 reactive
@@ -69,7 +78,10 @@ function createGetter(isReadonly = false, shallow = false) {
     return res;
   };
 }
-
+/* 
+  setter handlers
+  set 里面触发依赖
+*/
 function createSetter() {
   return function set(target, key, value, receiver) {
     const result = Reflect.set(target, key, value, receiver);

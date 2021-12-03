@@ -81,6 +81,7 @@ export function toRaw(value) {
 
 /* 
   这里是核心逻辑
+  reactive，shallowReactive，readonly，shallowReadonly这4个API 都是用下面这个函数实现的
 */
 function createReactiveObject(target, proxyMap, baseHandlers) {
   // 核心就是 proxy

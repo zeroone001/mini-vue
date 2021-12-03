@@ -79,9 +79,11 @@ function remove(child) {
 }
 
 let renderer;
-
+/* 
+  如果 renderer 有值的话，那么以后都不会初始化了
+  防止再次render
+*/
 function ensureRenderer() {
-  // 如果 renderer 有值的话，那么以后都不会初始化了
   return (
     renderer ||
     (renderer = createRenderer({
@@ -95,7 +97,9 @@ function ensureRenderer() {
     }))
   );
 }
-
+/* 
+  createApp 入口函数
+*/
 export const createApp = (...args) => {
   return ensureRenderer().createApp(...args);
 };
